@@ -281,7 +281,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function startCountdown() {
     clearInterval(countdownInterval);
-    let seconds = 90;
+    let seconds = 25;
     const countdownElement = document.getElementById("pass-countdown");
     countdownElement.textContent = seconds;
     countdownInterval = setInterval(() => {
