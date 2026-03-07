@@ -38,6 +38,41 @@ document.addEventListener("DOMContentLoaded", function () {
   let codeReader = null;
   let videoStream = null;
 
+  // Color picker modal
+  const colorPickerModal = document.getElementById("color-picker-modal");
+  const colorPickerInput = document.getElementById("accepted-color-picker");
+  const colorPickerSaveBtn = document.getElementById("color-picker-save-btn");
+  const announcementTile = document.getElementById("announcement-tile");
+
+  if (announcementTile) {
+    announcementTile.addEventListener("click", (e) => {
+      e.preventDefault();
+      // Load saved color into picker
+      const savedColor = localStorage.getItem("acceptedBorderColor") || "#4ade80";
+      if (colorPickerInput) colorPickerInput.value = savedColor;
+      colorPickerModal.classList.remove("hidden");
+    });
+  }
+
+  if (colorPickerSaveBtn) {
+    colorPickerSaveBtn.addEventListener("click", () => {
+      if (colorPickerInput) {
+        localStorage.setItem("acceptedBorderColor", colorPickerInput.value);
+        // Apply to accepted section if currently visible
+        const acceptedSection = document.getElementById("mpass-accepted-section");
+        if (acceptedSection) acceptedSection.style.backgroundColor = colorPickerInput.value;
+      }
+      colorPickerModal.classList.add("hidden");
+    });
+  }
+
+  // Close color picker modal on backdrop click
+  if (colorPickerModal) {
+    colorPickerModal.addEventListener("click", (e) => {
+      if (e.target === colorPickerModal) colorPickerModal.classList.add("hidden");
+    });
+  }
+
   hamburgerMenu.addEventListener("click", () => {
     sidebar.classList.toggle("open");
     overlay.classList.toggle("active");
@@ -115,13 +150,26 @@ document.addEventListener("DOMContentLoaded", function () {
     showPage(document.getElementById("profile-page"))
   );
 
-  function handleMessScannerClick(e) {
-    e.preventDefault();
-    if (window.currentUserTokens > 0) {
-      showPage(messCouponPage);
-    } else {
-      showCustomAlert("You don't have sufficient tokens");
+  async function requestCameraPermission() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      // Permission granted — stop the stream immediately (ZXing will open its own)
+      stream.getTracks().forEach((t) => t.stop());
+      return true;
+    } catch (err) {
+      const msg =
+        err.name === "NotAllowedError" || err.name === "PermissionDeniedError"
+          ? "Camera permission was denied. Please allow camera access in your browser settings and try again."
+          : "Camera is not available on this device or browser.";
+      showCustomAlert(msg);
+      return false;
     }
+  }
+
+  async function handleMessScannerClick(e) {
+    e.preventDefault();
+    const granted = await requestCameraPermission();
+    if (granted) showPage(messCouponPage);
   }
 
   messScannerLink.addEventListener("click", handleMessScannerClick);
@@ -134,6 +182,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     codeReader = null;
   }
+
+  const cancelScanBtn = document.getElementById("cancel-scan");
+  if (cancelScanBtn) cancelScanBtn.addEventListener("click", hideAllPages);
+
+  const backFromMessBtn = document.getElementById("back-to-dashboard-from-mess");
+  if (backFromMessBtn) backFromMessBtn.addEventListener("click", hideAllPages);
+
+  const backFromPassBtn = document.getElementById("back-to-dashboard-from-pass");
+  if (backFromPassBtn) backFromPassBtn.addEventListener("click", hideAllPages);
 
   document.querySelectorAll(".meal-button").forEach((button) => {
     button.addEventListener("click", () => {
@@ -150,11 +207,11 @@ document.addEventListener("DOMContentLoaded", function () {
       .decodeOnceFromVideoDevice(undefined, "video-stream")
       .then((result) => {
         if (result) {
-          navigator.mediaDevices
-            .getUserMedia({ video: true })
-            .then((stream) => {
-              videoStream = stream;
-            });
+          // Capture the active stream from the video element
+          const videoEl = document.getElementById("video-stream");
+          if (videoEl && videoEl.srcObject) {
+            videoStream = videoEl.srcObject;
+          }
           console.log("Barcode detected:", result.getText());
           showLoadingAnimation(mealType);
         }
@@ -162,9 +219,11 @@ document.addEventListener("DOMContentLoaded", function () {
       .catch((err) => {
         console.error("Camera or Scan Error:", err);
         if (err && err.name !== "NotFoundException") {
-          showCustomAlert(
-            "Could not start camera. Please check permissions and try again."
-          );
+          const msg =
+            err.name === "NotAllowedError"
+              ? "Camera permission denied. Please allow camera access and try again."
+              : "Could not start camera. Please check permissions and try again.";
+          showCustomAlert(msg);
           hideAllPages();
         }
       });
@@ -182,20 +241,15 @@ document.addEventListener("DOMContentLoaded", function () {
       messCouponPage.classList.remove("content-blurred");
       messCouponPage.classList.add("hidden");
       populateAndShowMessPass(mealType);
-    }, 4500);
+    }, 1000);
   }
 
   function populateAndShowMessPass(mealType) {
-    if (window.deductToken && typeof window.deductToken === "function") {
-      window.deductToken(window.UNIQUE_USER_ID);
-    }
-
     document.getElementById("pass-meal-type").textContent = mealType;
     const now = new Date();
     const dateOptions = { month: "short", day: "2-digit", year: "numeric" };
     document.getElementById("pass-date").textContent = now
-      .toLocaleString("en-US", dateOptions)
-      .replace(/,/g, "");
+      .toLocaleString("en-US", dateOptions);
     const timeOptions = { hour: "2-digit", minute: "2-digit", hour12: true };
     document.getElementById("pass-time").textContent = now.toLocaleTimeString(
       "en-US",
@@ -204,18 +258,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     showPage(document.getElementById("mess-pass-page"));
 
+    // Apply saved border color
+    const savedColor = localStorage.getItem("acceptedBorderColor") || "#4ade80";
+    const acceptedSection = document.getElementById("mpass-accepted-section");
+    const colorPicker = document.getElementById("accepted-color-picker");
+    if (acceptedSection) acceptedSection.style.backgroundColor = savedColor;
+    if (colorPicker) colorPicker.value = savedColor;
+
+    // Play video – will be stopped when countdown hits 0
     const acceptedVideo = document.getElementById("accepted-video");
     if (acceptedVideo) {
       acceptedVideo.loop = true;
       acceptedVideo.muted = true;
-      try {
-        acceptedVideo.currentTime = 0;
-      } catch (e) {}
+      acceptedVideo.currentTime = 0;
       acceptedVideo.play().catch((error) => {
-        console.warn(
-          "Video Autoplay Failed (user interaction may be required):",
-          error
-        );
+        console.warn("Video Autoplay Failed:", error);
       });
     }
 
@@ -224,7 +281,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function startCountdown() {
     clearInterval(countdownInterval);
-    let seconds = 30;
+    let seconds = 90;
     const countdownElement = document.getElementById("pass-countdown");
     countdownElement.textContent = seconds;
     countdownInterval = setInterval(() => {
@@ -233,57 +290,21 @@ document.addEventListener("DOMContentLoaded", function () {
       if (seconds <= 0) {
         clearInterval(countdownInterval);
         countdownElement.textContent = "0";
+        // Stop the video when timer runs out
+        const acceptedVideo = document.getElementById("accepted-video");
+        if (acceptedVideo) {
+          acceptedVideo.loop = false;
+          acceptedVideo.pause();
+          acceptedVideo.currentTime = 0;
+        }
+        // Redirect to the mess coupon (scanner) page
+        showPage(messCouponPage);
       }
     }, 1000);
   }
 
-  (function preventPageHorizontalPan() {
-    let startX = 0;
-    let startY = 0;
-    let isTracking = false;
 
-    document.addEventListener(
-      "touchstart",
-      function (e) {
-        if (!e.touches || e.touches.length > 1) return;
-        const t = e.touches[0];
-        startX = t.clientX;
-        startY = t.clientY;
-        isTracking = true;
-      },
-      { passive: true }
-    );
 
-    document.addEventListener(
-      "touchmove",
-      function (e) {
-        if (!isTracking || !e.touches || e.touches.length > 1) return;
-        const t = e.touches[0];
-        const dx = t.clientX - startX;
-        const dy = t.clientY - startY;
-
-        if (Math.abs(dx) > Math.abs(dy)) {
-          const insideHorizontalScroller =
-            e.target &&
-            e.target.closest &&
-            e.target.closest(".horizontal-scroll-container");
-
-          if (!insideHorizontalScroller) {
-            e.preventDefault();
-          }
-        }
-      },
-      { passive: false }
-    );
-
-    document.addEventListener(
-      "touchend",
-      function () {
-        isTracking = false;
-      },
-      { passive: true }
-    );
-  })();
 
   (function tilesGridScrollElevate() {
     const tilesGrid = document.querySelector(".tiles-grid");
@@ -313,4 +334,13 @@ document.addEventListener("DOMContentLoaded", function () {
       { passive: true }
     );
   })();
+
+  // Register Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Service Worker registered', reg))
+        .catch(err => console.error('Service Worker registration failed', err));
+    });
+  }
 });
