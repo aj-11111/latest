@@ -495,7 +495,8 @@ button:active,
 .mess-pass-page-content {
   display: block;
   /* Block allows for natural content height */
-  padding: 10px 14px 20px 14px !important;
+  padding: 25px 14px 20px 14px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .mpass-info-row {
@@ -526,7 +527,7 @@ button:active,
 
 
 .mpass-program {
-  font-size: 0.975rem !important;
+  font-size: 1.1rem !important;
   font-family: 'Inter', 'Segoe UI', sans-serif;
   font-weight: 500;
   /* letter-spacing: -0.02rem; */
@@ -595,7 +596,7 @@ button:active,
   font-family: 'Inter', 'Segoe UI', sans-serif;
   text-shadow: 2px 2px 4px rgba(15, 14, 14, 0.25);
   letter-spacing: -0.02rem;
-  line-height: 1.5;
+  line-height: 1.6;
   font-weight: 1000;
 }
 
