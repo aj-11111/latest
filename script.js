@@ -281,7 +281,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function startCountdown() {
     clearInterval(countdownInterval);
-    let seconds = 90;
+    let seconds = 25;
     const countdownElement = document.getElementById("pass-countdown");
     countdownElement.textContent = seconds;
     countdownInterval = setInterval(() => {
@@ -335,12 +335,20 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   })();
 
-  // Register Service Worker
+  // Unregister Service Worker and clear caches to fix live reload issues
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('Service Worker registered', reg))
-        .catch(err => console.error('Service Worker registration failed', err));
+    navigator.serviceWorker.getRegistrations().then(function (registrations) {
+      for (let registration of registrations) {
+        registration.unregister();
+      }
+    });
+  }
+
+  if ('caches' in window) {
+    caches.keys().then((names) => {
+      for (const name of names) {
+        caches.delete(name);
+      }
     });
   }
 });

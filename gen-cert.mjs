@@ -9,7 +9,7 @@ if (!existsSync("node_modules/selfsigned")) {
 
 const { generate } = (await import("./node_modules/selfsigned/index.js")).default;
 
-const attrs = [{ name: "commonName", value: "172.22.124.114" }];
+const attrs = [{ name: "commonName", value: "172.22.125.10" }];
 const pems = await generate(attrs, {
     days: 365,
     keySize: 2048,
@@ -17,7 +17,7 @@ const pems = await generate(attrs, {
         {
             name: "subjectAltName",
             altNames: [
-                { type: 7, ip: "172.22.124.114" },
+                { type: 7, ip: "172.22.125.10" },
                 { type: 2, value: "localhost" },
             ],
         },
