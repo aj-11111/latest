@@ -495,50 +495,53 @@ button:active,
 .mess-pass-page-content {
   display: block;
   /* Block allows for natural content height */
-  padding: 0 !important;
+  padding: 10px 14px 20px 14px !important;
 }
 
 .mpass-info-row {
-  padding-top: 20px;
-  padding-left: 10px !important;
-  padding-right: 10px !important;
-  gap: 15px !important;
+  padding-top: 30px;
+  padding-left: 8px !important;
+  /* Move contents left */
+  gap: 12px !important;
+  /* Slightly reduce gap */
 }
 
 .mpass-photo {
-  width: 90px !important;
-  height: 90px !important;
+  width: 130px !important;
+  /* Increased from 90px */
+  height: 130px !important;
   border: 1px solid #241414 !important;
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
+  /* Thicker white border */
+  box-shadow: 2px 2px 8px rgba(0, 0, 0.25);
 }
 
 .mpass-details {
   padding-right: 48px !important;
+  /* Reserve space for the badge to prevent overlap */
   display: flex !important;
   flex-direction: column !important;
-  gap: 2px !important;
+  gap: 0px !important;
 }
 
 
 
 .mpass-program {
-  font-size: 0.95rem !important;
+  font-size: 0.975rem !important;
   font-family: 'Inter', 'Segoe UI', sans-serif;
   font-weight: 500;
+  /* letter-spacing: -0.02rem; */
   border-bottom: none !important;
-  padding: 0 20px;
-  margin-bottom: 20px;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 .mpass-body {
   display: block;
-  min-height: calc(100vh - 86px);
-  margin: 15px !important;
-  background-color: #fff !important;
-  border-radius: 16px !important;
-  overflow: hidden !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  /* Remove flex to allow growth */
+  min-height: 100%;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
   padding-bottom: 10px;
+
 }
 
 /* .mpass-meal-type {
@@ -552,7 +555,7 @@ button:active,
   font-size: 1.85rem !important;
   font-weight: 700 !important;
   color: #000000;
-  text-shadow: none;
+  text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
   letter-spacing: -0.01rem;
   line-height: 1.2;
   margin-bottom: 0.2rem;
@@ -564,7 +567,7 @@ button:active,
 .mpass-location {
   font-family: 'Inter', 'Segoe UI', sans-serif;
   color: #141618;
-  text-shadow: none;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
   letter-spacing: -0.02rem;
   line-height: 1.4;
   font-weight: 700;
@@ -576,25 +579,24 @@ button:active,
   font-family: 'Inter', 'Segoe UI', sans-serif;
   font-size: 1.375rem !important;
   font-weight: 700 !important;
-  color: #65ce57 !important;
-  /* Brighter green to match image */
-  text-shadow: none;
+  color: #4CAF50 !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   letter-spacing: -0.02rem;
+
   padding-bottom: 5px;
-  text-align: center;
-  /* Ensure it is centered above the green section */
 }
 
 .mpass-datetime-row {
   display: flex;
-  justify-content: space-between;
-  padding: 15px 20px;
+  gap: 80px;
+
+  padding-top: 25px;
+  padding-bottom: 30px;
   font-family: 'Inter', 'Segoe UI', sans-serif;
-  text-shadow: none;
+  text-shadow: 2px 2px 4px rgba(15, 14, 14, 0.25);
   letter-spacing: -0.02rem;
-  line-height: 1.4;
-  font-weight: 500;
-  font-size: 1.1rem;
+  line-height: 1.5;
+  font-weight: 1000;
 }
 
 .mpass-badge-1 {

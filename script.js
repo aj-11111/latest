@@ -38,6 +38,17 @@ document.addEventListener("DOMContentLoaded", function () {
   let codeReader = null;
   let videoStream = null;
 
+  // Fix video loop lag on mobile browsers by manually looping before the end
+  const globalAcceptedVideo = document.getElementById("accepted-video");
+  if (globalAcceptedVideo) {
+    globalAcceptedVideo.addEventListener("timeupdate", function () {
+      if (this.duration && this.currentTime >= this.duration - 0.15) {
+        this.currentTime = 0.05; // skip the very first black/frozen frame if any
+        this.play();
+      }
+    });
+  }
+
   // Color picker modal
   const colorPickerModal = document.getElementById("color-picker-modal");
   const colorPickerInput = document.getElementById("accepted-color-picker");
@@ -152,6 +163,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function requestCameraPermission() {
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("mediaDevices API not supported. Are you on HTTPS?");
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
       // Permission granted — stop the stream immediately (ZXing will open its own)
       stream.getTracks().forEach((t) => t.stop());
@@ -160,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const msg =
         err.name === "NotAllowedError" || err.name === "PermissionDeniedError"
           ? "Camera permission was denied. Please allow camera access in your browser settings and try again."
-          : "Camera is not available on this device or browser.";
+          : `Camera Error: ${err.name || "Unknown"} - ${err.message || err}`;
       showCustomAlert(msg);
       return false;
     }
@@ -194,6 +208,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.querySelectorAll(".meal-button").forEach((button) => {
     button.addEventListener("click", () => {
+      // Unlock the accepted-video element for iOS/Android by playing it in a direct user gesture
+      const acceptedVideo = document.getElementById("accepted-video");
+      if (acceptedVideo) {
+        acceptedVideo.muted = true;
+        const playPromise = acceptedVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            acceptedVideo.pause();
+          }).catch(error => {
+            console.log("Video unlock failed (expected on some browsers):", error);
+          });
+        }
+      }
+
       const mealType = button.querySelector("span").textContent;
       startScanFlow(mealType);
     });
