@@ -229,7 +229,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function startScanFlow(mealType) {
     showPage(document.getElementById("camera-scanner-page"));
-    codeReader = new ZXingBrowser.BrowserMultiFormatReader();
+    
+    // Use BrowserQRCodeReader instead of BrowserMultiFormatReader to significantly speed up scanning
+    if (ZXingBrowser.BrowserQRCodeReader) {
+      codeReader = new ZXingBrowser.BrowserQRCodeReader();
+    } else {
+      codeReader = new ZXingBrowser.BrowserMultiFormatReader();
+    }
+
+    // Optimize continuous scanning delay (default is often 500ms)
+    codeReader.timeBetweenDecodingAttempts = 100;
 
     codeReader
       .decodeOnceFromVideoDevice(undefined, "video-stream")
